@@ -1,0 +1,23 @@
+{
+  "name": "botdoneleft-rewrite",
+  "version": "1.0.0",
+  "description": "botdoneleft written in typescript",
+  "main": "out/app.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kira0x1/botdoneleft-rewrite.git"
+  },
+  "author": "Kira",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kira0x1/botdoneleft-rewrite/issues"
+  },
+  "homepage": "https://github.com/kira0x1/botdoneleft-rewrite#readme",
+  "private": "true",
+  "dependencies": {
+    "discord.js": "^12.4.1"
+  }
+}
