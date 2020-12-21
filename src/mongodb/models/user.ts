@@ -9,7 +9,7 @@ export interface IRole {
 
 export interface IUser {
     username: string,
-    id: string
+    discordId: string
     tag: string,
     roles: IRole[],
     rapsheet: IRapsheet[]
