@@ -1,13 +1,14 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { bot } from '../app';
-import { Command } from '../types/bdl';
+import { Command, CommandGroup } from '../types/bdl';
 import { embedColor, wrap } from './styleUtil';
 
-export function findCommand(commandName: string) {
-    let commandFound
+export function findCommand(commandName: string): Command | undefined {
+    let commandFound: Command | undefined
 
     if (!bot.commands) {
-        return console.log('BOT IS UNDEFINED')
+        console.log('BOT IS UNDEFINED')
+        return
     }
 
     bot.commands.map(cmd => {
@@ -24,6 +25,24 @@ export function findCommand(commandName: string) {
     })
 
     return commandFound
+}
+
+export function findCommandGroup(groupName: string): CommandGroup | undefined {
+    groupName = groupName.toLowerCase()
+
+    let groupFound: CommandGroup | undefined
+
+    const commandGroups = bot.commands.array()
+
+    for (let i = 0; i < commandGroups.length; i++) {
+        const group = commandGroups[i]
+        if (group.name.toLowerCase() === groupName || group.aliases.find(a => a.toLowerCase() === groupName)) {
+            groupFound = group;
+            break;
+        }
+    }
+
+    return groupFound
 }
 
 export function sendArgsError(command: Command, message: Message) {
