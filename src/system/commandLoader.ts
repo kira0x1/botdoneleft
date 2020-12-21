@@ -24,7 +24,6 @@ export async function LoadCommands(bot: BdlClient) {
 
         if (meta) {
             commandGroup.description = meta.description;
-            // console.log(`found meta for ${commandGroup.name}\ndescription: ${meta.description}`)
         }
 
         commandGroup.commands = commands
