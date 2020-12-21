@@ -11,7 +11,6 @@ export async function LoadCommands(bot: BdlClient) {
     bot.commands = new Collection()
 
     readdirSync(rootPath).map(folder => {
-        console.log(chalk.bgRed.bold(folder))
         const commandGroup: CommandGroup = {
             name: folder,
             description: '',
@@ -51,7 +50,6 @@ function getCommandsFromFolder(folder: string): Array<Command> {
         .filter(file => file.endsWith('.js') && file !== "meta.js")
         .map(file => {
             const { command } = require(path.join(rootPath, folder, file))
-            console.log(command.name)
             commands.push(command)
         })
 
