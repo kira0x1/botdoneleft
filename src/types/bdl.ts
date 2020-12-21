@@ -9,11 +9,13 @@ export interface CommandGroup {
     name: string,
     description: string,
     aliases: string[],
-    commands: Command[]
+    commands: Command[],
+    permissions?: permission[]
 }
 
 export interface FolderMeta {
-    description: string
+    description: string,
+    permissions?: permission[]
 }
 
 export interface Command {
