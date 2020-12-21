@@ -11,7 +11,15 @@ export function findCommand(commandName: string) {
     }
 
     bot.commands.map(cmd => {
-        commandFound = cmd.commands.find(c => c.name === commandName)
+        commandFound = cmd.commands.find(
+            c =>
+                //Check name
+                c.name.toLowerCase() === commandName.toLowerCase() ||
+
+                //Check aliases
+                c.aliases.find(a => a.toLowerCase() === commandName.toLowerCase())
+        )
+
         if (commandFound) return
     })
 
