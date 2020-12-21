@@ -1,5 +1,6 @@
 import { FolderMeta } from '../../types/bdl';
 
 export const meta: FolderMeta = {
-    description: 'Mod Commands'
+    description: 'Mod Commands',
+    permissions: ['moderator']
 }
