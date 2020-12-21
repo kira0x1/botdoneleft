@@ -1,14 +1,19 @@
 import { GuildMember, Message, Client, Collection } from "discord.js";
 
 export class BdlClient extends Client {
-    commands: Collection<string, commandGroup>
+    commands: Collection<string, CommandGroup>
     prefix: string = "!"
 }
 
-export interface commandGroup {
+export interface CommandGroup {
     name: string,
+    description: string,
     aliases: string[],
     commands: Command[]
+}
+
+export interface FolderMeta {
+    description: string
 }
 
 export interface Command {
