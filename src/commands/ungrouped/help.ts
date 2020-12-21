@@ -1,27 +1,56 @@
-import { Command } from "../../types/bdl";
-import { bot } from '../../app';
 import { Message, MessageEmbed } from 'discord.js';
-import { embedColor, wrap, createFooter } from '../../util/styleUtil';
-import { findCommand } from '../../util/commandUtil';
+import { bot } from '../../app';
+import { Command, CommandGroup } from '../../types/bdl';
+import { findCommand, findCommandGroup } from '../../util/commandUtil';
+import { embedColor, wrap } from '../../util/styleUtil';
 
 
 export const command: Command = {
     name: 'help',
     aliases: ['h'],
-    description: 'Lists all commands, and provides usage for specific command, query: strings',
+    description: 'Lists all commands, or provides usage for specific command',
 
     async execute(message, args) {
         const query = args.shift()?.toLowerCase();
         if (!query) return allCommands(message);
-
         singleCommand(message, query)
     }
+}
+
+function helpGroup(message: Message, commandGroup: CommandGroup) {
+    const embed = new MessageEmbed()
+        .setColor(embedColor)
+        .setTitle(commandGroup.name)
+
+    let groupDesc = `**Description**\n`
+        + commandGroup.description + `\n\n**Aliases**\n ${wrap(commandGroup.aliases, '`')}`
+
+    embed.setDescription(groupDesc)
+
+    commandGroup.commands.map(cmd => {
+        let desc = cmd.description;
+
+        //Add aliases to the description
+        if (cmd.aliases) {
+            desc += `\naliases: ${wrap(cmd.aliases, '`')}`;
+        }
+
+        desc += `\n${getUsage(cmd)}`;
+
+        embed.addField(cmd.name.toLowerCase(), desc)
+    })
+
+
+    message.channel.send(embed)
 }
 
 function singleCommand(message: Message, query: string) {
     const command = findCommand(query)
 
     if (!command) {
+        const commandGroup = findCommandGroup(query)
+        if (commandGroup) return helpGroup(message, commandGroup)
+
         message.author.send(`Command ${wrap(query)} not found`);
         return;
     }
@@ -31,9 +60,12 @@ function singleCommand(message: Message, query: string) {
     // return message.author.send(`You do not have permission to use ${wrap(command.name)}`);
 
 
-    const embed = InsertCommandEmbed(createFooter(message), command)
+
+    const embed = new MessageEmbed().setColor(embedColor)
+    InsertCommandEmbed(embed, command)
     message.channel.send(embed)
 }
+
 
 function allCommands(message: Message) {
     const embed = new MessageEmbed()
@@ -67,4 +99,8 @@ function InsertCommandEmbed(embed: MessageEmbed, command: Command) {
     }
 
     return embed;
+}
+
+function getUsage(command: Command) {
+    return command.usage ? wrap(`${bot.prefix}${command.name} ${command.usage}`, '`') : ``
 }
