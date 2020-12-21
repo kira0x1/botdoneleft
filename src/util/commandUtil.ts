@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { bot } from '../app';
-import { BdlClient, commandGroup, Command } from '../types/bdl';
+import { Command } from '../types/bdl';
 import { embedColor, wrap } from './styleUtil';
 
 export function findCommand(commandName: string) {
