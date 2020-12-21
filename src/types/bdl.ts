@@ -2,19 +2,21 @@ import { GuildMember, Message, Client, Collection } from "discord.js";
 
 export class BdlClient extends Client {
     commands: Collection<string, commandGroup>
+    prefix: string = "!"
 }
 
 export interface commandGroup {
     name: string,
     aliases: string[],
-    commands: command[]
+    commands: Command[]
 }
 
-export interface command {
+export interface Command {
     name: string,
     description: string,
     aliases: string[],
-    argS?: boolean,
+    args?: boolean,
+    usage?: string,
     permissions?: permission[],
 
     execute(message: Message, args: string[], target?: GuildMember): void
