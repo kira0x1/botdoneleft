@@ -2,33 +2,59 @@ import chalk from "chalk";
 import { Collection } from "discord.js";
 import { readdirSync } from "fs";
 import path from 'path';
-import { BdlClient, Command, commandGroup } from '../types/bdl';
+import { BdlClient, Command, CommandGroup, FolderMeta } from '../types/bdl';
+
+const rootPath = path.join(__dirname, '../commands')
+
 
 export async function LoadCommands(bot: BdlClient) {
     bot.commands = new Collection()
 
-    readdirSync(path.join(__dirname, '../commands')).map(folder => {
+    readdirSync(rootPath).map(folder => {
         console.log(chalk.bgRed.bold(folder))
-        const commandGroup: commandGroup = {
+        const commandGroup: CommandGroup = {
             name: folder,
+            description: '',
             aliases: [],
             commands: []
         }
 
-        commandGroup.commands = getCommandsFromFolder(folder)
+        const commands = getCommandsFromFolder(folder)
+        const meta = getMetaFile(folder)
+
+        if (meta) {
+            commandGroup.description = meta.description;
+            // console.log(`found meta for ${commandGroup.name}\ndescription: ${meta.description}`)
+        }
+
+        commandGroup.commands = commands
         bot.commands.set(folder, commandGroup)
     })
 }
 
+function getMetaFile(folder: string) {
+    let metaFound: FolderMeta
+
+    readdirSync(path.join(rootPath, folder)).find(file => {
+        if (file === "meta.js") {
+            const { meta } = require(path.join(rootPath, folder, file))
+            metaFound = meta
+        }
+    })
+
+    return metaFound
+}
+
 function getCommandsFromFolder(folder: string): Array<Command> {
     const commands: Command[] = []
-    const rootPath = path.join(__dirname, '../commands', folder)
 
-    readdirSync(rootPath).filter(file => file.endsWith('.js')).map(file => {
-        const { command } = require(path.join(rootPath, file))
-        console.log(command.name)
-        commands.push(command)
-    })
+    readdirSync(path.join(rootPath, folder))
+        .filter(file => file.endsWith('.js') && file !== "meta.js")
+        .map(file => {
+            const { command } = require(path.join(rootPath, folder, file))
+            console.log(command.name)
+            commands.push(command)
+        })
 
     return commands
 }
