@@ -19,10 +19,12 @@ export async function LoadCommands(bot: BdlClient) {
         }
 
         const commands = getCommandsFromFolder(folder)
+
         const meta = getMetaFile(folder)
 
         if (meta) {
             commandGroup.description = meta.description;
+            if (meta.permissions) commandGroup.permissions = meta.permissions
         }
 
         commandGroup.commands = commands
