@@ -24,6 +24,8 @@ export async function LoadCommands(bot: BdlClient) {
 
         if (meta) {
             commandGroup.description = meta.description;
+
+            if (meta.aliases) commandGroup.aliases = meta.aliases
             if (meta.permissions) commandGroup.permissions = meta.permissions
         }
 
