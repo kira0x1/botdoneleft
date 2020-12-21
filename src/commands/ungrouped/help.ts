@@ -93,7 +93,7 @@ function InsertCommandEmbed(embed: MessageEmbed, command: Command) {
         embed.addField('Usage', wrap(command.usage, '`'));
     }
 
-    if (command.aliases) {
+    if (command.aliases && command.aliases.length > 0) {
         const aliasesString = wrap(command.aliases, '`');
         embed.addField('aliases: ', aliasesString);
     }
