@@ -9,9 +9,10 @@ export interface IRole {
 
 export interface IUser {
     username: string,
+    id: string
     tag: string,
     roles: IRole[],
-    id: string
+    rapsheet: IRapsheet[]
 }
 
 export interface IRapsheet {
@@ -30,4 +31,4 @@ export const UserSchema = new Schema({
     createdAt: Date
 })
 
-export const userModel = model('users', UserSchema)
+export const User = model('users', UserSchema)
