@@ -1,6 +1,15 @@
 import { IUser, IRole, User } from '../models/user';
 import { GuildMember } from 'discord.js';
 
+export async function findAllUsers() {
+    try {
+        const usersFound: IUser[] = await User.find({}).lean()
+        return usersFound;
+    } catch (error) {
+        console.error(error)
+    }
+}
+
 export async function createUser(user: IUser | GuildMember) {
     try {
         if (user instanceof GuildMember) user = converMemberToIUser(user)
