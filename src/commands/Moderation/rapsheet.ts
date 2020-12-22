@@ -10,8 +10,10 @@ export const command: Command = {
     usage: '[id | name]',
 
     async execute(message, args) {
-        const id = message.author.id
-        const user = await findOrCreate(id, message.member)
+        const target = message.mentions.members?.first() || message.member
+        const id = target.id
+
+        const user = await findOrCreate(id, target)
 
         if (!user) {
             return message.channel.send('user not found')
