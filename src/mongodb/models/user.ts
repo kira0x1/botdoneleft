@@ -24,7 +24,7 @@ export interface IRapsheet {
 
 export const UserSchema = new Schema({
     username: { type: String, required: true },
-    discordId: { type: String, required: true },
+    discordId: { type: String, required: true, unique: true },
     tag: { type: String, required: true },
     roles: { type: Array<IRole>(), required: true },
     rapsheet: { type: Array<IRapsheet>(), required: true },
