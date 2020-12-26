@@ -1,6 +1,6 @@
 import ms from "ms";
 import { Command } from "../../types/bdl";
-import { getMemberFromMentions, getTarget } from "../../util/discordUtil";
+import { getTarget } from "../../util/discordUtil";
 
 const gulagRoleId = '778679179293884440'
 
@@ -28,6 +28,6 @@ export const command: Command = {
             return message.channel.send(`Failed to gulag **${member.displayName}**`)
         }
 
-        return message.channel.send(`Gulagged **${member.displayName}** for ${args[1]}\nreason: ${reason}`)
+        return message.channel.send(`Gulagged **${member.displayName}** for ${args[1]}\nReason: ${reason}`)
     }
 }
