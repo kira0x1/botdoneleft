@@ -2,7 +2,7 @@ import { MessageEmbed } from "discord.js";
 import { findOrCreate } from "../../mongodb/api/userApi";
 import { Command } from "../../types/bdl";
 import { getTarget } from "../../util/discordUtil";
-import { createFooter, embedColor } from "../../util/styleUtil";
+import { createEmptyField, createFooter, embedColor, wrap } from "../../util/styleUtil";
 
 export const command: Command = {
     name: 'rapsheet',
@@ -23,8 +23,8 @@ export const command: Command = {
         }
 
         const embed = createFooter(message)
-            .setTitle(`Rapsheet`)
-            .setDescription(`${target}`)
+            .setTitle('Rapsheet')
+            .setDescription(`${target}\n${wrap(target.id)}`)
             .setThumbnail(target.user.avatarURL({ dynamic: true }))
 
         const warnings = []
@@ -33,6 +33,21 @@ export const command: Command = {
         })
 
         embed.addField(`Warnings: ${warnings.length}`, warnings.join('\n') || 'none')
+
+        const mutes = []
+        user.rapsheet.filter(r => r.punishment === 'mute').map(w => {
+            mutes.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        })
+
+        embed.addField(`Mutes: ${mutes.length}`, mutes.join('\n') || 'none')
+
+        const gulags = []
+        user.rapsheet.filter(r => r.punishment === 'gulag').map(w => {
+            gulags.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        })
+
+        embed.addField(`Gulags: ${gulags.length}`, gulags.join('\n') || 'none')
+        embed.addField(`\u200b\nJoined`, target.joinedAt.toLocaleDateString())
 
         message.channel.send(embed)
     }
