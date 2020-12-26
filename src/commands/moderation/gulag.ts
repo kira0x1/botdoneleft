@@ -1,8 +1,7 @@
-import { MessageEmbed } from "discord.js";
 import ms from "ms";
 import { Command } from "../../types/bdl";
 import { getTarget } from "../../util/discordUtil";
-import { createFooter, embedColor } from "../../util/styleUtil";
+import { createFooter } from "../../util/styleUtil";
 
 const gulagRoleId = '778679179293884440'
 
