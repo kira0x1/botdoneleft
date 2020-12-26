@@ -1,5 +1,14 @@
-import { model, Schema } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 
+declare type punishment = "warn" | "mute" | "gulag"
+
+export interface IRapsheet {
+    punishment: punishment,
+    moderatedBy: string
+    reason?: string,
+    duration?: string,
+    date: string
+}
 
 //TODO also add rank I.E mod: 1, janitor: 2
 export interface IRole {
@@ -7,19 +16,12 @@ export interface IRole {
     id: string
 }
 
-export interface IUser {
+export interface IUser extends Document {
     username: string,
     discordId: string
     tag: string,
     roles: IRole[],
     rapsheet: IRapsheet[]
-}
-
-export interface IRapsheet {
-    reason?: string,
-    punishment: string,
-    duration: string,
-    moderatedBy: string
 }
 
 export const UserSchema = new Schema({
@@ -31,4 +33,4 @@ export const UserSchema = new Schema({
     createdAt: Date
 })
 
-export const User = model('users', UserSchema)
+export const User = model<IUser>('users', UserSchema)
