@@ -1,5 +1,8 @@
-import { findOrCreate, findUser } from "../../mongodb/api/userApi";
+import { MessageEmbed } from "discord.js";
+import { findOrCreate } from "../../mongodb/api/userApi";
 import { Command } from "../../types/bdl";
+import { getTarget } from "../../util/discordUtil";
+import { createFooter, embedColor } from "../../util/styleUtil";
 
 export const command: Command = {
     name: 'rapsheet',
@@ -10,7 +13,7 @@ export const command: Command = {
     usage: '[id | name]',
 
     async execute(message, args) {
-        const target = message.mentions.members?.first() || message.member
+        const target = getTarget(args[0], message) || message.member
         const id = target.id
 
         const user = await findOrCreate(id, target)
@@ -19,6 +22,18 @@ export const command: Command = {
             return message.channel.send('user not found')
         }
 
-        message.channel.send(`User: ${user.username}\nrapsheet size: ${user.rapsheet.length}`)
+        const embed = createFooter(message)
+            .setTitle(`Rapsheet`)
+            .setDescription(`${target}`)
+            .setThumbnail(target.user.avatarURL({ dynamic: true }))
+
+        const warnings = []
+        user.rapsheet.filter(r => r.punishment === 'warn').map(w => {
+            warnings.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        })
+
+        embed.addField(`Warnings: ${warnings.length}`, warnings.join('\n') || 'none')
+
+        message.channel.send(embed)
     }
 }
