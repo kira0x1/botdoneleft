@@ -1,6 +1,7 @@
 import { GuildMember, Message, User } from "discord.js";
 
 export function getTarget(query: string, message: Message) {
+    if (!query) return;
     if (message.mentions.members.size > 0) {
         return getMemberFromMentions(query, message)
     }
