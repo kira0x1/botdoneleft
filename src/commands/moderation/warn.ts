@@ -1,5 +1,8 @@
+import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
+import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
 import { getTarget } from "../../util/discordUtil";
+import { createFooter } from "../../util/styleUtil";
 
 export const command: Command = {
     name: 'Warn',
@@ -17,11 +20,26 @@ export const command: Command = {
         const reason = args.slice(1).join(' ')
 
         try {
-            
+            const user = await findOrCreate(member.id, member)
+            const rap: IRapsheet = {
+                moderatedBy: message.author.id,
+                punishment: "warn",
+                reason: reason,
+                date: message.createdAt.toLocaleDateString()
+            }
+
+            const res = await addToRapsheet(user, rap)
+            if (!res) console.log('error trying to add rapsheet during warning???')
         } catch (error) {
             return message.channel.send(`Failed to warn **${member.displayName}**`)
         }
 
-        return message.channel.send(`Warned **${member.displayName}**\nReason: ${reason}`)
+        const embed = createFooter(message)
+            .setTitle('You have been warned!')
+            .setThumbnail(member.user.avatarURL({ dynamic: true }))
+            .setDescription(`${message.member} has warned ${member}`)
+            .addField('reason', reason)
+
+        return message.channel.send(embed)
     }
 }
