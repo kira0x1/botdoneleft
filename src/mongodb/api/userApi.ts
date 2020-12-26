@@ -1,5 +1,5 @@
-import { IUser, IRole, User } from '../models/user';
 import { GuildMember } from 'discord.js';
+import { IRapsheet, IRole, IUser, User } from '../models/user';
 
 export async function findAllUsers() {
     try {
@@ -12,9 +12,8 @@ export async function findAllUsers() {
 
 export async function createUser(user: IUser | GuildMember) {
     try {
-        if (user instanceof GuildMember) user = converMemberToIUser(user)
-        const dbuser = new User(user)
-        return await dbuser.save()
+        if (user instanceof GuildMember) return await new User(converMemberToIUser(user)).save()
+        return await new User(user).save()
     }
     catch (error) {
         console.error(error)
@@ -23,7 +22,7 @@ export async function createUser(user: IUser | GuildMember) {
 
 export async function findUser(discordId: string): Promise<IUser> {
     try {
-        const user: any = await User.findOne({ discordId: discordId })
+        const user = await User.findOne({ discordId: discordId })
         return user
     } catch (error) {
         console.error(error)
@@ -32,12 +31,12 @@ export async function findUser(discordId: string): Promise<IUser> {
 }
 
 export async function findOrCreate(id: string, member: GuildMember) {
-    let user: any = await findUser(id)
+    let user = await findUser(id)
     if (!user) user = await createUser(member)
     return user
 }
 
-function converMemberToIUser(member: GuildMember): IUser {
+function converMemberToIUser(member: GuildMember) {
     const roles: IRole[] = []
     member.roles.cache.map(r => roles.push({ name: r.name, id: r.id }))
 
@@ -48,4 +47,9 @@ function converMemberToIUser(member: GuildMember): IUser {
         roles: roles,
         rapsheet: []
     }
+}
+
+export async function addToRapsheet(user: IUser, rapsheet: IRapsheet) {
+    user.rapsheet.push(rapsheet)
+    return await user.save()
 }
