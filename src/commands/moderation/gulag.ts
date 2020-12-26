@@ -1,6 +1,8 @@
+import { MessageEmbed } from "discord.js";
 import ms from "ms";
 import { Command } from "../../types/bdl";
 import { getTarget } from "../../util/discordUtil";
+import { createFooter, embedColor } from "../../util/styleUtil";
 
 const gulagRoleId = '778679179293884440'
 
@@ -19,7 +21,6 @@ export const command: Command = {
         if (!member) return message.reply('Failed to find member, please use a proper id or mention')
 
         const time = ms(args[1])
-
         const reason = args.slice(2).join(' ')
 
         try {
@@ -28,6 +29,12 @@ export const command: Command = {
             return message.channel.send(`Failed to gulag **${member.displayName}**`)
         }
 
-        return message.channel.send(`Gulagged **${member.displayName}** for ${args[1]}\nReason: ${reason}`)
+        const embed = createFooter(message)
+            .setTitle('You have been banished to the Gulag')
+            .setDescription(`${message.author} gulaged ${member} (${member.id}) ${time ? `for ${time}` : 'forever'}`)
+            .addField('reason', reason)
+
+
+        return message.channel.send(embed)
     }
 }
