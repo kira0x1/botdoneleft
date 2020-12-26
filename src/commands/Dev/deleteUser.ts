@@ -1,11 +1,11 @@
 import { findUser } from '../../mongodb/api/userApi';
 import { Command } from '../../types/bdl';
 import { quickEmbed } from '../../util/styleUtil';
-import { User, UserSchema } from '../../mongodb/models/user';
+
 export const command: Command = {
-    name: 'Delete User',
+    name: 'deleteUser',
     description: 'Deletes a user from the database',
-    aliases: [],
+    aliases: ['du'],
     permissions: ['admin'],
 
     async execute(message, args) {
@@ -13,5 +13,12 @@ export const command: Command = {
 
         const userFound = await findUser(target.id)
         if (!userFound) return quickEmbed(message, `User "${target.displayName}" not found`)
+
+        try {
+            const deletedUser = await userFound.delete()
+            quickEmbed(message, `Deleted **${deletedUser.username}** from the database`)
+        } catch (err) {
+            console.error(err)
+        }
     }
 }
