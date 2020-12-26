@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import { Collection } from "discord.js";
 import { readdirSync } from "fs";
 import path from 'path';

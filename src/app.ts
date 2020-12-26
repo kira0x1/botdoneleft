@@ -3,11 +3,14 @@ import { token } from './config'
 import { BdlClient } from './types/bdl'
 import { findCommand, sendArgsError } from './util/commandUtil'
 import chalk from 'chalk';
-import { wrap } from 'module';
+import { connectToDB } from './mongodb/database';
+import { wrap } from './util/styleUtil';
 
 export const bot = new BdlClient({
     presence: { activity: { name: 'Socialist\'s Trolling', type: 'WATCHING' } }
 })
+
+connectToDB()
 
 bot.on('ready', async () => {
     await LoadCommands(bot)

@@ -4,25 +4,21 @@ import { Command, CommandGroup } from '../types/bdl';
 import { embedColor, wrap } from './styleUtil';
 
 export function findCommand(commandName: string): Command | undefined {
+    commandName = commandName.toLowerCase()
+
     let commandFound: Command | undefined
 
-    if (!bot.commands) {
-        console.log('BOT IS UNDEFINED')
-        return
+    const commands = []
+    bot.commands.array().map(c => c.commands.map(cmd => commands.push(cmd)))
+
+    for (let i = 0; i < commands.length; i++) {
+        const cmd = commands[i]
+
+        if (cmd.name.toLowerCase() === commandName || cmd.aliases.find(a => a.toLowerCase() === commandName)) {
+            commandFound = cmd
+            break;
+        }
     }
-
-    bot.commands.map(cmd => {
-        commandFound = cmd.commands.find(
-            c =>
-                //Check name
-                c.name.toLowerCase() === commandName.toLowerCase() ||
-
-                //Check aliases
-                c.aliases.find(a => a.toLowerCase() === commandName.toLowerCase())
-        )
-
-        if (commandFound) return
-    })
 
     return commandFound
 }
