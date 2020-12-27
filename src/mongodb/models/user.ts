@@ -1,13 +1,13 @@
 import { Document, model, Schema } from "mongoose";
 
-declare type punishment = "warn" | "mute" | "gulag"
+export declare type punishment = "warn" | "mute" | "gulag"
 
 export interface IRapsheet {
     punishment: punishment,
     moderatedBy: string
     reason?: string,
     duration?: string,
-    date: string
+    date: Date
 }
 
 //TODO also add rank I.E mod: 1, janitor: 2
