@@ -1,7 +1,7 @@
 import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
 import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
-import { getTarget } from "../../util/discordUtil";
+import { createRapsheet, getTarget } from "../../util/discordUtil";
 import { createFooter } from "../../util/styleUtil";
 
 export const command: Command = {
@@ -21,15 +21,8 @@ export const command: Command = {
 
         try {
             const user = await findOrCreate(member.id, member)
-            const rap: IRapsheet = {
-                moderatedBy: message.author.id,
-                punishment: "warn",
-                reason: reason,
-                date: message.createdAt.toLocaleDateString()
-            }
-
-            const res = await addToRapsheet(user, rap)
-            if (!res) console.log('error trying to add rapsheet during warning???')
+            const rap: IRapsheet = createRapsheet("warn", reason, message.author.id, message.createdAt)
+            addToRapsheet(user, rap)
         } catch (error) {
             return message.channel.send(`Failed to warn **${member.displayName}**`)
         }
