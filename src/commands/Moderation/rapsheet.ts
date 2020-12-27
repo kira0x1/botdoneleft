@@ -1,8 +1,7 @@
-import { MessageEmbed } from "discord.js";
 import { findOrCreate } from "../../mongodb/api/userApi";
 import { Command } from "../../types/bdl";
-import { getTarget } from "../../util/discordUtil";
-import { createEmptyField, createFooter, embedColor, wrap } from "../../util/styleUtil";
+import { createRapsheetField, getTarget } from "../../util/discordUtil";
+import { createFooter, wrap } from "../../util/styleUtil";
 
 export const command: Command = {
     name: 'rapsheet',
@@ -28,22 +27,22 @@ export const command: Command = {
             .setThumbnail(target.user.avatarURL({ dynamic: true }))
 
         const warnings = []
-        user.rapsheet.filter(r => r.punishment === 'warn').map(w => {
-            warnings.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        user.rapsheet.filter(r => r.punishment === 'warn').map(rap => {
+            warnings.push(createRapsheetField(rap))
         })
 
         embed.addField(`Warnings: ${warnings.length}`, warnings.join('\n') || 'none')
 
         const mutes = []
-        user.rapsheet.filter(r => r.punishment === 'mute').map(w => {
-            mutes.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        user.rapsheet.filter(r => r.punishment === 'mute').map(rap => {
+            mutes.push(createRapsheetField(rap))
         })
 
         embed.addField(`Mutes: ${mutes.length}`, mutes.join('\n') || 'none')
 
         const gulags = []
-        user.rapsheet.filter(r => r.punishment === 'gulag').map(w => {
-            gulags.push(`${w.date} <@${w.moderatedBy}>\t\t${w.reason}`)
+        user.rapsheet.filter(r => r.punishment === 'gulag').map(rap => {
+            gulags.push(createRapsheetField(rap))
         })
 
         embed.addField(`Gulags: ${gulags.length}`, gulags.join('\n') || 'none')
