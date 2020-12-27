@@ -1,4 +1,5 @@
 import { GuildMember, Message, User } from "discord.js";
+import { IRapsheet, punishment } from "../mongodb/models/user";
 
 export function getTarget(query: string, message: Message) {
     if (!query) return;
@@ -40,4 +41,19 @@ export function getMemberFromMentions(mention: string, message: Message): GuildM
     const id = getIdFromMentions(mention);
     if (!id) return;
     return message.guild.members.cache.get(id);
+}
+
+export function createRapsheetField(rapsheet: IRapsheet) {
+    return `${rapsheet.date.toLocaleDateString()} <@${rapsheet.moderatedBy}>\t\t${rapsheet.reason}`
+}
+
+export function createRapsheet(punishment: punishment, reason: string, moderatorId: string, date: Date, duration?: string) {
+    const rap: IRapsheet = {
+        moderatedBy: moderatorId,
+        punishment: punishment,
+        reason: reason,
+        date: date
+    }
+    if (duration) rap.duration = duration
+    return rap
 }
