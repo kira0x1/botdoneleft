@@ -30,4 +30,8 @@ export interface Command {
     execute(message: Message, args: string[], target?: GuildMember): void
 }
 
-declare type permission = 'admin' | 'moderator' | 'janitor' | 'member' | 'musicban' | 'allban'
+declare type permission = 'admin' | 'moderator' | 'janitor'
+
+export const moderatorRole = "778679179464933402"
+export const janitorRole = "778679179464933401"
+export const admins = ["177016697117474816"]
