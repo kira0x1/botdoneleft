@@ -1,5 +1,6 @@
 import { GuildMember, Message, User } from "discord.js";
 import { IRapsheet, punishment } from "../mongodb/models/user";
+import { admins, Command, janitorRole, moderatorRole } from "../types/bdl";
 
 export function getTarget(query: string, message: Message) {
     if (!query) return;
@@ -56,4 +57,25 @@ export function createRapsheet(punishment: punishment, reason: string, moderator
     }
     if (duration) rap.duration = duration
     return rap
+}
+
+export function checkPermission(member: GuildMember, command: Command) {
+
+    // If the command has no permissions then give access
+    if (!command.permissions) return true;
+
+    // If an admin give access to all commands
+    if (admins.includes(member.id)) return true
+
+    // If the command requires admin access, check if the member is an admin
+    if (command.permissions.includes("admin") && admins.includes(member.id)) return true;
+
+    // Check for moderator commands
+    if (command.permissions.includes("moderator") && member.roles.cache.has(moderatorRole)) return true;
+
+    // Check for janitor commands
+    if (command.permissions.includes("janitor") && member.roles.cache.has(moderatorRole)) return true;
+    if (command.permissions.includes("janitor") && member.roles.cache.has(janitorRole)) return true;
+
+    return false
 }
