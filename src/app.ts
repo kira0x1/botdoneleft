@@ -5,6 +5,7 @@ import { findCommand, sendArgsError } from './util/commandUtil'
 import chalk from 'chalk';
 import { connectToDB } from './mongodb/database';
 import { wrap } from './util/styleUtil';
+import { checkPermission } from './util/discordUtil';
 
 export const bot = new BdlClient({
     presence: { activity: { name: 'Socialist\'s Trolling', type: 'WATCHING' } }
@@ -34,6 +35,11 @@ bot.on('message', async message => {
     // If command not found send a message
     if (!command)
         return message.author.send(`command ${wrap(commandName || '')} not found`);
+
+    if (!checkPermission(message.member, command)) {
+        message.member.send("You dont have enough permissions to use that command")
+        return;
+    }
 
     if (command.args && args.length === 0) return sendArgsError(command, message)
 
