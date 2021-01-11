@@ -7,7 +7,7 @@ export const command: Command = {
     name: 'ListUsers',
     description: "List all users in the database",
     aliases: ['ls'],
-    permissions: ['admin'],
+    permissions: ['moderator'],
 
     async execute(message, args) {
         const users = await findAllUsers();
