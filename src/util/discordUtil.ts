@@ -68,7 +68,7 @@ export function checkPermission(member: GuildMember, command: Command) {
     if (admins.includes(member.id)) return true
 
     // If the command requires admin access, check if the member is an admin
-    if (command.permissions.includes("admin") && admins.includes(member.id)) return true;
+    if (command.permissions.includes("admin") && !admins.includes(member.id)) return false;
 
     // Check for moderator commands
     if (command.permissions.includes("moderator") && member.roles.cache.has(moderatorRole)) return true;
