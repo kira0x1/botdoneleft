@@ -12,7 +12,7 @@ export const command: Command = {
     usage: '[id | name]',
 
     async execute(message, args) {
-        const target = getTarget(args[0], message) || message.member
+        const target = await getTarget(args[0], message) || message.member
         const id = target.id
 
         const user = await findOrCreate(id, target)

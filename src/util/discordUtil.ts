@@ -2,7 +2,7 @@ import { GuildMember, Message, User } from "discord.js";
 import { IRapsheet, punishment } from "../mongodb/models/user";
 import { admins, Command, janitorRole, moderatorRole } from "../types/bdl";
 
-export function getTarget(query: string, message: Message) {
+export async function getTarget(query: string, message: Message) {
     if (!query) return;
     if (message.mentions.members.size > 0) {
         return getMemberFromMentions(query, message)
@@ -14,9 +14,14 @@ export function getTarget(query: string, message: Message) {
 
     // Search for members by name and id
     let member = guild.members.cache.find(m => m.displayName.toLowerCase() === query || m.id === query);
+    if (member) return member
 
-    // If we found the member the return it
-    return member;
+    //If user wasnt found either due to a typo, or the user wasnt cached then query query the guild.
+    const memberSearch = await guild.members.fetch({ query: query, limit: 1 });
+
+    if (memberSearch && memberSearch.first()) {
+        return memberSearch.first();
+    }
 }
 
 function getIdFromMentions(mention: string) {
