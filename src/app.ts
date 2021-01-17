@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { connectToDB } from './mongodb/database';
 import { wrap } from './util/styleUtil';
 import { checkPermission } from './util/discordUtil';
+import { init } from './system/rolePersist';
 
 export const bot = new BdlClient({
     presence: { activity: { name: 'Socialist\'s Trolling', type: 'WATCHING' } }
@@ -14,6 +15,7 @@ export const bot = new BdlClient({
 connectToDB()
 
 bot.on('ready', async () => {
+    init(bot);
     await LoadCommands(bot)
     console.log(chalk.bgMagenta.bold(`${bot.user.username} is online!`))
 })
