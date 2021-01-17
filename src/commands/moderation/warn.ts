@@ -14,7 +14,7 @@ export const command: Command = {
     async execute(message, args) {
         if (args.length < 2) return message.reply('please use a proper id or mention, and specify the reason')
 
-        const member = getTarget(args[0], message)
+        const member = await getTarget(args[0], message)
         if (!member) return message.reply('Failed to find member, please use a proper id or mention')
 
         const reason = args.slice(1).join(' ')
