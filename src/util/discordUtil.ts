@@ -84,3 +84,10 @@ export function checkPermission(member: GuildMember, command: Command) {
 
     return false
 }
+
+export async function getRole(query: string, message: Message) {
+    const guild = message.guild;
+
+    //TODO make sure if the role isnt cached to fetch from the guild instead
+    return guild.roles.cache.find(r => r.id === query || r.name.toLowerCase() === query.toLowerCase())
+}
