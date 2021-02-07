@@ -3,7 +3,7 @@ import { Command } from "../../types/bdl";
 import { getTarget } from "../../util/discordUtil";
 import { createFooter } from "../../util/styleUtil";
 
-const gulagRoleId = '778679179293884440'
+export const gulagRoleId = '778679179293884440'
 
 export const command: Command = {
     name: 'Gulag',
