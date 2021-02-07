@@ -1,0 +1,42 @@
+import ms from "ms";
+import { addTimedBan } from "../../mongodb/api/timedBansApi";
+import { Command } from "../../types/bdl";
+import { getTarget } from "../../util/discordUtil";
+import { createFooter } from "../../util/styleUtil";
+
+export const muteRoleId = '778679179293884439'
+
+export const command: Command = {
+    name: 'Mute',
+    description: 'Mute a user',
+    aliases: ['silence'],
+    args: true,
+    permissions: ["admin"],
+    usage: '[id | @user] [time] [reason]',
+
+    async execute(message, args) {
+        if (args.length < 3) return message.reply('please use a proper id or mention, length of mute, and specify the reason')
+
+        const member = await getTarget(args[0], message)
+        if (!member) return message.reply('Failed to find member, please use a proper id or mention')
+
+        const timeArgs = args[1]
+        const time = ms(timeArgs)
+        const reason = args.slice(2).join(' ')
+
+        try {
+            await member.roles.add(muteRoleId, reason)
+            await addTimedBan(member, message.member, time, "mute")
+        } catch (error) {
+            console.error(error)
+            return message.channel.send(`Failed to mute **${member.displayName}**`)
+        }
+
+        const embed = createFooter(message)
+            .setTitle('A commie has silenced you, oh no')
+            .setDescription(`${message.author} muted ${member} (${member.id}) ${time ? `for ${timeArgs}` : 'forever'}`)
+            .addField('reason', reason)
+
+        return message.channel.send(embed)
+    }
+}
