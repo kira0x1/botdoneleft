@@ -5,8 +5,10 @@ export interface ITimedBanUser extends Document {
     discordid: string,
     isMuted: boolean,
     isGulaged: boolean,
-    gulagTimer: number,
-    muteTimer: number,
+    gulagedDate: number,
+    mutedDate: number,
+    gulagTime: number,
+    muteTime: number,
     overrides: IPunishmentOverride[]
 }
 
@@ -21,8 +23,10 @@ export const TimedBanSchema = new Schema({
     discordId: { type: String, required: true },
     isMuted: { type: Boolean, required: true },
     isGulaged: { type: Boolean, required: true },
-    gulagTimer: { type: Number, required: true },
-    muteTimer: { type: Number, required: true },
+    gulagedDate: { type: Number, required: true },
+    gulagTime: { type: Number, required: true },
+    mutedDate: { type: Number, required: true },
+    mutedTime: { type: Number, required: true },
     overrides: { type: Array<IPunishmentOverride>(), required: true }
 })
 
