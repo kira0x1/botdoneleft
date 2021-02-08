@@ -2,19 +2,19 @@ import { Document, model, Schema } from "mongoose";
 import { punishment } from "./user";
 
 export interface ITimedBanUser extends Document {
-    discordid: string,
+    discordId: string,
     isMuted: boolean,
     isGulaged: boolean,
     gulagedDate: number,
-    mutedDate: number,
     gulagTime: number,
-    muteTime: number,
+    mutedDate: number,
+    mutedTime: number,
     overrides: IPunishmentOverride[]
 }
 
 export interface IPunishmentOverride {
-    modid: string,
-    username: string,
+    modId: string,
+    modName: string,
     punishment: punishment,
     time: number
 }
