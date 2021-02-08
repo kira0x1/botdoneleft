@@ -30,8 +30,8 @@ export async function findUser(discordId: string): Promise<IUser> {
     }
 }
 
-export async function findOrCreate(id: string, member: GuildMember) {
-    let user = await findUser(id)
+export async function findOrCreate(member: GuildMember) {
+    let user = await findUser(member.id)
     if (!user) user = await createUser(member)
     return user
 }
