@@ -1,10 +1,11 @@
-import { Collection, GuildMember, Client } from 'discord.js';
+import chalk from 'chalk';
+import { Collection, GuildMember } from 'discord.js';
 import { bot } from '../../app';
-import { ITimedBanUser, TimedBans } from '../models/timedBan';
-import { punishment } from '../models/user';
-import { serverId } from '../../config';
 import { gulagRoleId } from '../../commands/moderation/gulag';
 import { muteRoleId } from '../../commands/moderation/mute';
+import { serverId } from '../../config';
+import { ITimedBanUser, TimedBans, IPunishmentOverride } from '../models/timedBan';
+import { punishment } from '../models/user';
 
 async function findAllTimedBans() {
     try {
@@ -20,10 +21,12 @@ export async function createTimedBanUser(member: GuildMember) {
     try {
         const tb = {
             discordId: member.id,
+            gulagedBy: 'none',
+            mutedBy: 'none',
             isMuted: false,
             isGulaged: false,
             gulagedDate: 0,
-            gulagedTime: 0,
+            gulagTime: 0,
             mutedDate: 0,
             mutedTime: 0,
             override: []
@@ -45,7 +48,7 @@ export async function findTimedBan(discordId: string): Promise<ITimedBanUser> {
     }
 }
 
-export async function findOrCreate(member: GuildMember) {
+export async function findOrCreateTimedBanUser(member: GuildMember) {
     let user = await findTimedBan(member.id);
     if (!user) user = await createTimedBanUser(member);
     return user
@@ -54,64 +57,61 @@ export async function findOrCreate(member: GuildMember) {
 export async function addTimedBan(member: GuildMember, mod: GuildMember, time: number, punishment: punishment) {
     if (punishment === 'warn') return
 
-    const user = await findOrCreate(member)
+    const user = await findOrCreateTimedBanUser(member)
 
     const now = Date.now();
 
-    // if ((punishment === 'gulag' && user.isGulaged) || (punishment === 'mute' && user.isMuted)) {
-    //     addOverride(user, mod, punishment, done)
-    // }
+    if ((punishment === 'gulag' && user.isGulaged) || (punishment === 'mute' && user.isMuted)) {
+        addOverride(user, mod, punishment, time)
+    }
 
     if (punishment === "mute") {
         user.isMuted = true;
         user.mutedDate = now;
-        user.muteTime = time;
+        user.mutedTime = time;
+        user.mutedBy = mod.id;
     }
     else if (punishment === "gulag") {
         user.isGulaged = true;
         user.gulagedDate = now;
         user.gulagTime = time;
+        user.gulagedBy = mod.id
     }
 
+    user.save();
     setPunishmentTimer(member.id, punishment, time)
 }
 
-// async function addOverride(user: ITimedBanUser, mod: GuildMember, punishment: punishment, time: number) {
-//     user.overrides.push({
-//         modid: mod.id,
-//         punishment: punishment,
-//         time: time,
-//         username: mod.displayName
-//     })
+function addOverride(user: ITimedBanUser, mod: GuildMember, punishment: punishment, time: number) {
+    const prevModId = punishment === 'gulag' ? user.gulagedBy : user.mutedBy
+    const prevTime = punishment === 'gulag' ? user.gulagTime : user.mutedTime
 
-//     if (punishment === 'gulag') {
-//         user.isGulaged = true;
-//         user.gulagDoneDate = time;
-//     }
-//     else if (punishment === "mute") {
-//         user.isMuted = true;
-//         user.muteDoneDate = time;
-//     }
-// }
-
-function setPunishmentTimer(discordId: string, punishment: punishment, time: number) {
-    let events = timedBansEvents.get(discordId)
-    if (!events) {
-        timedBansEvents.set(discordId, [])
-        events = timedBansEvents.get(discordId)
+    const ov: IPunishmentOverride = {
+        modId: mod.id,
+        modName: mod.displayName,
+        punishment: punishment,
+        time: time,
+        previousModId: prevModId,
+        previousTime: prevTime
     }
 
-    console.log(time)
+    user.overrides.push(ov)
+}
 
-    events.push(setTimeout(() => {
-        OnPunishmentDone(discordId, punishment), time
-    }))
+function setPunishmentTimer(discordId: string, punishment: punishment, time: number) {
+    const now = Date.now();
+
+    setTimeout(() => {
+        const ts = Date.now();
+        const diff = ts - now;
+        OnPunishmentDone(discordId, punishment)
+    }, time)
 }
 
 async function OnPunishmentDone(discordId: string, punishment: punishment) {
     const user = await findTimedBan(discordId)
+
     if (punishment === 'gulag') {
-        console.log('user gulag ended')
         user.isGulaged = false;
         try {
             bot.guilds.cache.get(serverId).members.cache.get(discordId).roles.remove(gulagRoleId)
@@ -120,7 +120,6 @@ async function OnPunishmentDone(discordId: string, punishment: punishment) {
         }
 
     } else if (punishment === 'mute') {
-        console.log('user mute ended')
         user.isMuted = false;
         try {
             bot.guilds.cache.get(serverId).members.cache.get(discordId).roles.remove(muteRoleId)
@@ -129,18 +128,36 @@ async function OnPunishmentDone(discordId: string, punishment: punishment) {
             console.error(error)
         }
     }
+
+    user.save();
 }
 
 const timedBansEvents: Collection<string, any[]> = new Collection();
 
-// export async function RefreshTimedBans(client: Client) {
-//     const timedBans = await findAllTimedBans()
+export async function RefreshTimedBans() {
+    const timedBans = await findAllTimedBans()
 
-//     timedBans.map(tb => {
-//         if (tb.isGulaged) {
-//             setPunishmentTimer(tb.discordid, "gulag", tb.gulagDoneDate)
-//         } else {
-//             setPunishmentTimer(tb.discordid, "mute", tb.muteDoneDate)
-//         }
-//     })
-// }
+    console.log(`-----------------------`);
+    console.log(chalk.bgRed.bold(`TIMED BANS\n`))
+    console.table(timedBans.filter(user => user.isMuted || user.isGulaged))
+    console.log(`-----------------------\n`);
+
+    timedBans.map(user => {
+        if (user.isMuted) {
+            const timeDiff = Date.now() - user.mutedDate
+
+            let timeLeft = timeDiff < 0 ? 0 : user.mutedTime - timeDiff
+            if (timeLeft < 0) timeLeft = 0
+
+            setTimeout(() => OnPunishmentDone(user.discordId, 'mute'), timeLeft);
+        }
+
+        if (user.isGulaged) {
+            const timeDiff = Date.now() - user.gulagedDate
+            let timeLeft = timeDiff < 0 ? 0 : user.gulagTime - timeDiff
+            if (timeLeft < 0) timeLeft = 0
+
+            setTimeout(() => OnPunishmentDone(user.discordId, 'gulag'), timeLeft);
+        }
+    })
+}
