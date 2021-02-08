@@ -1,7 +1,10 @@
 import ms from "ms";
+import { addTimedBan } from "../../mongodb/api/timedBansApi";
+import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
+import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
-import { getTarget } from "../../util/discordUtil";
-import { createFooter } from "../../util/styleUtil";
+import { createRapsheet, getTarget } from "../../util/discordUtil";
+import { addCodeField, createFooter } from '../../util/styleUtil';
 
 export const gulagRoleId = '778679179293884440'
 
@@ -19,20 +22,27 @@ export const command: Command = {
         const member = await getTarget(args[0], message)
         if (!member) return message.reply('Failed to find member, please use a proper id or mention')
 
-        const time = ms(args[1])
+        const timeArgs = args[1]
+        const time = ms(timeArgs)
         const reason = args.slice(2).join(' ')
 
         try {
+            const user = await findOrCreate(member)
+            const rap: IRapsheet = createRapsheet("gulag", reason, message.author.id, message.createdAt, time)
+            addToRapsheet(user, rap)
+
             await member.roles.add(gulagRoleId, reason)
+            await addTimedBan(member, message.member, time, 'gulag')
         } catch (error) {
             return message.channel.send(`Failed to gulag **${member.displayName}**`)
         }
 
         const embed = createFooter(message)
             .setTitle('You have been banished to the Gulag')
-            .setDescription(`${message.author} gulaged ${member} (${member.id}) ${time ? `for ${time}` : 'forever'}`)
-            .addField('reason', reason)
+            .setDescription(`${message.author} gulaged ${member}) ${time ? `for ${timeArgs}` : 'forever'}`)
 
+        addCodeField(embed, member.id, 'ID', true)
+        addCodeField(embed, reason, 'Reason', true)
 
         return message.channel.send(embed)
     }
