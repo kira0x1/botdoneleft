@@ -1,8 +1,10 @@
 import ms from "ms";
 import { addTimedBan } from "../../mongodb/api/timedBansApi";
+import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
+import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
-import { getTarget } from "../../util/discordUtil";
-import { createFooter } from "../../util/styleUtil";
+import { createRapsheet, getTarget } from "../../util/discordUtil";
+import { addCodeField, createFooter } from "../../util/styleUtil";
 
 export const muteRoleId = '778679179293884439'
 
@@ -25,6 +27,10 @@ export const command: Command = {
         const reason = args.slice(2).join(' ')
 
         try {
+            const user = await findOrCreate(member)
+            const rap: IRapsheet = createRapsheet("mute", reason, message.author.id, message.createdAt, time)
+            addToRapsheet(user, rap)
+
             await member.roles.add(muteRoleId, reason)
             await addTimedBan(member, message.member, time, "mute")
         } catch (error) {
@@ -35,7 +41,9 @@ export const command: Command = {
         const embed = createFooter(message)
             .setTitle('A commie has silenced you, oh no')
             .setDescription(`${message.author} muted ${member} (${member.id}) ${time ? `for ${timeArgs}` : 'forever'}`)
-            .addField('reason', reason)
+
+        addCodeField(embed, member.id, 'ID', true)
+        addCodeField(embed, reason, 'Reason', true)
 
         return message.channel.send(embed)
     }
