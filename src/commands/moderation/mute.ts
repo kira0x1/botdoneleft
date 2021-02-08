@@ -4,20 +4,20 @@ import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
 import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
 import { createRapsheet, getTarget } from "../../util/discordUtil";
-import { addCodeField, createFooter } from '../../util/styleUtil';
+import { addCodeField, createFooter } from "../../util/styleUtil";
 
-export const gulagRoleId = '778679179293884440'
+export const muteRoleId = '778679179293884439'
 
 export const command: Command = {
-    name: 'Gulag',
-    description: 'Gulags a user',
-    aliases: ['g', 'ban'],
+    name: 'Mute',
+    description: 'Mute a user',
+    aliases: ['silence'],
     args: true,
     permissions: ["admin"],
     usage: '[id | @user] [time] [reason]',
 
     async execute(message, args) {
-        if (args.length < 3) return message.reply('please use a proper id or mention, length of gulag, and specify the reason')
+        if (args.length < 3) return message.reply('please use a proper id or mention, length of mute, and specify the reason')
 
         const member = await getTarget(args[0], message)
         if (!member) return message.reply('Failed to find member, please use a proper id or mention')
@@ -28,18 +28,19 @@ export const command: Command = {
 
         try {
             const user = await findOrCreate(member)
-            const rap: IRapsheet = createRapsheet("gulag", reason, message.author.id, message.createdAt, time)
+            const rap: IRapsheet = createRapsheet("mute", reason, message.author.id, message.createdAt, time)
             addToRapsheet(user, rap)
 
-            await member.roles.add(gulagRoleId, reason)
-            await addTimedBan(member, message.member, time, 'gulag')
+            await member.roles.add(muteRoleId, reason)
+            await addTimedBan(member, message.member, time, "mute")
         } catch (error) {
-            return message.channel.send(`Failed to gulag **${member.displayName}**`)
+            console.error(error)
+            return message.channel.send(`Failed to mute **${member.displayName}**`)
         }
 
         const embed = createFooter(message)
-            .setTitle('You have been banished to the Gulag')
-            .setDescription(`${message.author} gulaged ${member}) ${time ? `for ${timeArgs}` : 'forever'}`)
+            .setTitle('A commie has silenced you, oh no')
+            .setDescription(`${message.author} muted ${member} (${member.id}) ${time ? `for ${timeArgs}` : 'forever'}`)
 
         addCodeField(embed, member.id, 'ID', true)
         addCodeField(embed, reason, 'Reason', true)

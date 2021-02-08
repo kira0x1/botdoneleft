@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Message, MessageEmbed, EmbedField } from 'discord.js';
 
 const redColor = 0xcf274e;
 // const blueColor = 0x4e74e6;
@@ -36,6 +36,13 @@ export function quickEmbed(message: Message, content: string) {
     message.channel.send(embed);
 }
 
-export function createEmptyField(inline?: boolean | false) {
-    return { name: `\u200b`, value: '\u200b', inline: true };
+export function createEmptyField(inline?: boolean | false): EmbedField {
+    return { name: `\u200b`, value: '\u200b', inline: inline };
+}
+
+export function addCodeField(embed: MessageEmbed, content: string, title?: string, blank?: boolean, lang = 'yaml', inline?: boolean | false) {
+    const value = `\`\`\`${lang}\n${content}\`\`\``
+
+    if (title && blank) title = `\u200b\n${title}`
+    embed.addField(title ? title : `\u200b`, value, inline)
 }

@@ -1,6 +1,8 @@
 import { GuildMember, Message, User } from "discord.js";
 import { IRapsheet, punishment } from "../mongodb/models/user";
 import { admins, Command, janitorRole, moderatorRole } from "../types/bdl";
+import { IPunishmentOverride } from '../mongodb/models/timedBan';
+import ms from "ms";
 
 export async function getTarget(query: string, message: Message) {
     if (!query) return;
@@ -50,17 +52,26 @@ export function getMemberFromMentions(mention: string, message: Message): GuildM
 }
 
 export function createRapsheetField(rapsheet: IRapsheet) {
-    return `${rapsheet.date.toLocaleDateString()} <@${rapsheet.moderatedBy}>\t\t${rapsheet.reason}`
+    let field = `${rapsheet.date.toLocaleDateString()} <@${rapsheet.moderatedBy}>\t\tReason: **${rapsheet.reason}**`
+    if (rapsheet.punishment !== 'warn') field += `\t\tDuration: **${rapsheet.duration}**`
+
+    return field;
 }
 
-export function createRapsheet(punishment: punishment, reason: string, moderatorId: string, date: Date, duration?: string) {
+export function createOverrideField(override: IPunishmentOverride) {
+    return `<@${override.modId}>, previous: <@${override.previousModId}>, Time: ${ms(override.time)}, Previous Time: ${ms(override.previousTime)}`
+}
+
+
+export function createRapsheet(punishment: punishment, reason: string, moderatorId: string, date: Date, duration?: number) {
     const rap: IRapsheet = {
         moderatedBy: moderatorId,
         punishment: punishment,
         reason: reason,
         date: date
     }
-    if (duration) rap.duration = duration
+
+    if (duration) rap.duration = ms(duration, { long: true })
     return rap
 }
 

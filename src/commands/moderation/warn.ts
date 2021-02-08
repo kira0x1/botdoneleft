@@ -20,7 +20,7 @@ export const command: Command = {
         const reason = args.slice(1).join(' ')
 
         try {
-            const user = await findOrCreate(member.id, member)
+            const user = await findOrCreate(member)
             const rap: IRapsheet = createRapsheet("warn", reason, message.author.id, message.createdAt)
             addToRapsheet(user, rap)
         } catch (error) {

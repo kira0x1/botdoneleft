@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { connectToDB } from './mongodb/database';
 import { wrap } from './util/styleUtil';
 import { checkPermission } from './util/discordUtil';
+import { RefreshTimedBans } from './mongodb/api/timedBansApi';
 
 export const bot = new BdlClient({
     presence: { activity: { name: 'Socialist\'s Trolling', type: 'WATCHING' } }
@@ -15,6 +16,7 @@ connectToDB()
 
 bot.on('ready', async () => {
     await LoadCommands(bot)
+    RefreshTimedBans()
     console.log(chalk.bgMagenta.bold(`${bot.user.username} is online!`))
 })
 
