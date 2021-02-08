@@ -3,6 +3,8 @@ import { punishment } from "./user";
 
 export interface ITimedBanUser extends Document {
     discordId: string,
+    mutedBy: string,
+    gulagedBy: string,
     isMuted: boolean,
     isGulaged: boolean,
     gulagedDate: number,
@@ -15,12 +17,16 @@ export interface ITimedBanUser extends Document {
 export interface IPunishmentOverride {
     modId: string,
     modName: string,
+    previousModId: string,
     punishment: punishment,
+    previousTime: number,
     time: number
 }
 
 export const TimedBanSchema = new Schema({
     discordId: { type: String, required: true },
+    gulagedBy: { type: String, required: true },
+    mutedBy: { type: String, required: true },
     isMuted: { type: Boolean, required: true },
     isGulaged: { type: Boolean, required: true },
     gulagedDate: { type: Number, required: true },
