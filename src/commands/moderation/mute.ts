@@ -1,12 +1,11 @@
 import ms from "ms";
+import { findOrCreateServer } from "../../mongodb/api/serverApi";
 import { addTimedBan } from "../../mongodb/api/timedBansApi";
 import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
 import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
 import { createRapsheet, getTarget } from "../../util/discordUtil";
 import { addCodeField, createFooter } from "../../util/styleUtil";
-
-export const muteRoleId = '778679179293884439'
 
 export const command: Command = {
     name: 'Mute',
@@ -27,11 +26,16 @@ export const command: Command = {
         const reason = args.slice(2).join(' ')
 
         try {
+            const server = await findOrCreateServer(message.guild)
+            if (server.muteRoleId === "empty") {
+                return message.channel.send('you have not set the mute role yet')
+            }
+
             const user = await findOrCreate(member)
             const rap: IRapsheet = createRapsheet("mute", reason, message.author.id, message.createdAt, time)
             addToRapsheet(user, rap)
 
-            await member.roles.add(muteRoleId, reason)
+            await member.roles.add(server.muteRoleId, reason)
             await addTimedBan(member, message.member, time, "mute")
         } catch (error) {
             console.error(error)

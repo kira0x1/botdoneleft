@@ -22,8 +22,7 @@ export async function createUser(user: IUser | GuildMember) {
 
 export async function findUser(discordId: string): Promise<IUser> {
     try {
-        const user = await User.findOne({ discordId: discordId })
-        return user
+        return await User.findOne({ discordId: discordId })
     } catch (error) {
         console.error(error)
         return error

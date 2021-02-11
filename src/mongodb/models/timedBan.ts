@@ -2,6 +2,7 @@ import { Document, model, Schema } from "mongoose";
 import { punishment } from "./user";
 
 export interface ITimedBanUser extends Document {
+    guildId: string,
     discordId: string,
     mutedBy: string,
     gulagedBy: string,
@@ -24,6 +25,7 @@ export interface IPunishmentOverride {
 }
 
 export const TimedBanSchema = new Schema({
+    guildId: { type: String, required: true },
     discordId: { type: String, required: true },
     gulagedBy: { type: String, required: true },
     mutedBy: { type: String, required: true },
