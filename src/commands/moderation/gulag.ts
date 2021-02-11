@@ -1,12 +1,11 @@
 import ms from "ms";
+import { findOrCreateServer } from "../../mongodb/api/serverApi";
 import { addTimedBan } from "../../mongodb/api/timedBansApi";
 import { addToRapsheet, findOrCreate } from "../../mongodb/api/userApi";
 import { IRapsheet } from "../../mongodb/models/user";
 import { Command } from "../../types/bdl";
 import { createRapsheet, getTarget } from "../../util/discordUtil";
 import { addCodeField, createFooter } from '../../util/styleUtil';
-
-export const gulagRoleId = '778679179293884440'
 
 export const command: Command = {
     name: 'Gulag',
@@ -27,11 +26,18 @@ export const command: Command = {
         const reason = args.slice(2).join(' ')
 
         try {
+
+            const server = await findOrCreateServer(message.guild)
+
+            if (server.gulagRoleId === "empty") {
+                return message.channel.send(`You have not assigned the gulag role yet.`)
+            }
+
             const user = await findOrCreate(member)
             const rap: IRapsheet = createRapsheet("gulag", reason, message.author.id, message.createdAt, time)
             addToRapsheet(user, rap)
 
-            await member.roles.add(gulagRoleId, reason)
+            await member.roles.add(server.gulagRoleId, reason)
             await addTimedBan(member, message.member, time, 'gulag')
         } catch (error) {
             return message.channel.send(`Failed to gulag **${member.displayName}**`)

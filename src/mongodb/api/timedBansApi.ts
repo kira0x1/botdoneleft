@@ -1,11 +1,9 @@
 import chalk from 'chalk';
-import { Collection, GuildMember } from 'discord.js';
+import { Collection, GuildMember, Guild } from 'discord.js';
 import { bot } from '../../app';
-import { gulagRoleId } from '../../commands/moderation/gulag';
-import { muteRoleId } from '../../commands/moderation/mute';
-import { serverId } from '../../config';
 import { ITimedBanUser, TimedBans, IPunishmentOverride } from '../models/timedBan';
 import { punishment } from '../models/user';
+import { findOrCreateServer } from './serverApi';
 
 async function findAllTimedBans() {
     try {
@@ -20,6 +18,7 @@ async function findAllTimedBans() {
 export async function createTimedBanUser(member: GuildMember) {
     try {
         const tb = {
+            guildId: member.guild.id,
             discordId: member.id,
             gulagedBy: 'none',
             mutedBy: 'none',
@@ -79,7 +78,7 @@ export async function addTimedBan(member: GuildMember, mod: GuildMember, time: n
     }
 
     user.save();
-    setPunishmentTimer(member.id, punishment, time)
+    setPunishmentTimer(member.guild, member.id, punishment, time)
 }
 
 function addOverride(user: ITimedBanUser, mod: GuildMember, punishment: punishment, time: number) {
@@ -98,23 +97,27 @@ function addOverride(user: ITimedBanUser, mod: GuildMember, punishment: punishme
     user.overrides.push(ov)
 }
 
-function setPunishmentTimer(discordId: string, punishment: punishment, time: number) {
+function setPunishmentTimer(guild: Guild, discordId: string, punishment: punishment, time: number) {
     const now = Date.now();
 
     setTimeout(() => {
         const ts = Date.now();
         const diff = ts - now;
-        OnPunishmentDone(discordId, punishment)
+        OnPunishmentDone(guild, discordId, punishment)
     }, time)
 }
 
-async function OnPunishmentDone(discordId: string, punishment: punishment) {
+async function OnPunishmentDone(guild: Guild, discordId: string, punishment: punishment) {
     const user = await findTimedBan(discordId)
+
+    const server = await findOrCreateServer(guild)
+    const member = guild.members.cache.get(discordId)
+    if (!member) return console.log('member not found, they probably left the server')
 
     if (punishment === 'gulag') {
         user.isGulaged = false;
         try {
-            bot.guilds.cache.get(serverId).members.cache.get(discordId).roles.remove(gulagRoleId)
+            member.roles.remove(server.gulagRoleId)
         } catch (error) {
             console.error(error)
         }
@@ -122,7 +125,7 @@ async function OnPunishmentDone(discordId: string, punishment: punishment) {
     } else if (punishment === 'mute') {
         user.isMuted = false;
         try {
-            bot.guilds.cache.get(serverId).members.cache.get(discordId).roles.remove(muteRoleId)
+            member.roles.remove(server.muteRoleId)
         }
         catch (error) {
             console.error(error)
@@ -143,13 +146,15 @@ export async function RefreshTimedBans() {
     console.log(`-----------------------\n`);
 
     timedBans.map(user => {
+        const guild = bot.guilds.cache.get(user.guildId)
+
         if (user.isMuted) {
             const timeDiff = Date.now() - user.mutedDate
 
             let timeLeft = timeDiff < 0 ? 0 : user.mutedTime - timeDiff
             if (timeLeft < 0) timeLeft = 0
 
-            setTimeout(() => OnPunishmentDone(user.discordId, 'mute'), timeLeft);
+            setTimeout(() => OnPunishmentDone(guild, user.discordId, 'mute'), timeLeft);
         }
 
         if (user.isGulaged) {
@@ -157,7 +162,7 @@ export async function RefreshTimedBans() {
             let timeLeft = timeDiff < 0 ? 0 : user.gulagTime - timeDiff
             if (timeLeft < 0) timeLeft = 0
 
-            setTimeout(() => OnPunishmentDone(user.discordId, 'gulag'), timeLeft);
+            setTimeout(() => OnPunishmentDone(guild, user.discordId, 'gulag'), timeLeft);
         }
     })
 }
